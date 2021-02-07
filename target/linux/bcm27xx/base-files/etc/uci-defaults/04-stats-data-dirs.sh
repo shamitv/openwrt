@@ -8,4 +8,8 @@ grep -qxF '/data/' /etc/sysupgrade.conf || echo '/data/' >> /etc/sysupgrade.conf
 
 mkdir -p /data/nlbwmon
 mkdir -p /data/collectd
+
+
+chmod 777 /data/nlbwmon
+chmod 777 /data/collectd
 ~
