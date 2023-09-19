@@ -34,7 +34,7 @@ MODULE_PARM_DESC(msg_level, "Message level (-1=defaults,0=none,...,16=all)");
 
 #define ETH_SWITCH_HEADER_LEN	2
 
-static int ag71xx_tx_packets(struct ag71xx *ag, bool flush);
+static int ag71xx_tx_packets(struct ag71xx *ag, bool flush, int budget);
 
 static inline unsigned int ag71xx_max_frame_len(unsigned int mtu)
 {
@@ -333,7 +333,7 @@ static unsigned char *ag71xx_speed_str(struct ag71xx *ag)
 	return "?";
 }
 
-static void ag71xx_hw_set_macaddr(struct ag71xx *ag, unsigned char *mac)
+static void ag71xx_hw_set_macaddr(struct ag71xx *ag, const unsigned char *mac)
 {
 	u32 t;
 
@@ -478,7 +478,7 @@ static void ag71xx_fast_reset(struct ag71xx *ag)
 	mii_reg = ag71xx_rr(ag, AG71XX_REG_MII_CFG);
 	rx_ds = ag71xx_rr(ag, AG71XX_REG_RX_DESC);
 
-	ag71xx_tx_packets(ag, true);
+	ag71xx_tx_packets(ag, true, 0);
 
 	reset_control_assert(ag->mac_reset);
 	udelay(10);
@@ -1166,7 +1166,7 @@ static int ag71xx_do_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
 	switch (cmd) {
 	case SIOCSIFHWADDR:
 		if (copy_from_user
-			(dev->dev_addr, ifr->ifr_data, sizeof(dev->dev_addr)))
+			((void*)dev->dev_addr, ifr->ifr_data, sizeof(dev->dev_addr)))
 			return -EFAULT;
 		return 0;
 
@@ -1245,7 +1245,7 @@ static bool ag71xx_check_dma_stuck(struct ag71xx *ag)
 	return false;
 }
 
-static int ag71xx_tx_packets(struct ag71xx *ag, bool flush)
+static int ag71xx_tx_packets(struct ag71xx *ag, bool flush, int budget)
 {
 	struct ag71xx_ring *ring = &ag->tx_ring;
 	bool dma_stuck = false;
@@ -1278,7 +1278,7 @@ static int ag71xx_tx_packets(struct ag71xx *ag, bool flush)
 		if (!skb)
 			continue;
 
-		dev_kfree_skb_any(skb);
+		napi_consume_skb(skb, budget);
 		ring->buf[i].skb = NULL;
 
 		bytes_compl += ring->buf[i].len;
@@ -1352,7 +1352,7 @@ static int ag71xx_rx_packets(struct ag71xx *ag, int limit)
 		dev->stats.rx_packets++;
 		dev->stats.rx_bytes += pktlen;
 
-		skb = build_skb(ring->buf[i].rx_buf, ag71xx_buffer_size(ag));
+		skb = napi_build_skb(ring->buf[i].rx_buf, ag71xx_buffer_size(ag));
 		if (!skb) {
 			skb_free_frag(ring->buf[i].rx_buf);
 			goto next;
@@ -1400,7 +1400,7 @@ static int ag71xx_poll(struct napi_struct *napi, int limit)
 	int tx_done;
 	int rx_done;
 
-	tx_done = ag71xx_tx_packets(ag, false);
+	tx_done = ag71xx_tx_packets(ag, false, limit);
 
 	DBG("%s: processing RX ring\n", dev->name);
 	rx_done = ag71xx_rx_packets(ag, limit);
@@ -1669,10 +1669,9 @@ static int ag71xx_probe(struct platform_device *pdev)
 	ag->stop_desc->ctrl = 0;
 	ag->stop_desc->next = (u32) ag->stop_desc_dma;
 
-	of_get_mac_address(np, dev->dev_addr);
-	if (!is_valid_ether_addr(dev->dev_addr)) {
+	if (of_get_ethdev_address(np, dev)) {
 		dev_err(&pdev->dev, "invalid MAC address, using random address\n");
-		eth_random_addr(dev->dev_addr);
+		eth_hw_addr_random(dev);
 	}
 
 	err = of_get_phy_mode(np, &ag->phy_if_mode);
@@ -1699,7 +1698,11 @@ static int ag71xx_probe(struct platform_device *pdev)
 			break;
 		}
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,19,0)
+	netif_napi_add_weight(dev, &ag->napi, ag71xx_poll, AG71XX_NAPI_WEIGHT);
+#else
 	netif_napi_add(dev, &ag->napi, ag71xx_poll, AG71XX_NAPI_WEIGHT);
+#endif
 
 	ag71xx_dump_regs(ag);
 

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later OR MIT
 
-#include "qcom-ipq8064-v2.0.dtsi"
+#include "qcom-ipq8064-v2.0-smb208.dtsi"
 
 #include <dt-bindings/input/input.h>
 
@@ -8,6 +8,17 @@
 	memory@0 {
 		reg = <0x42000000 0x1e000000>;
 		device_type = "memory";
+	};
+
+	reserved-memory {
+		ramoops@42100000 {
+			compatible = "ramoops";
+			reg = <0x42100000 0x40000>;
+			record-size = <0x4000>;
+			console-size = <0x4000>;
+			ftrace-size = <0x4000>;
+			pmsg-size = <0x4000>;
+		};
 	};
 
 	aliases {
@@ -250,11 +261,27 @@
 	};
 };
 
+&hs_phy_0 {
+	status = "okay";
+};
+
+&ss_phy_0 {
+	status = "okay";
+};
+
 &usb3_0 {
 	status = "okay";
 
 	pinctrl-0 = <&usb0_pwr_en_pin>;
 	pinctrl-names = "default";
+};
+
+&hs_phy_1 {
+	status = "okay";
+};
+
+&ss_phy_1 {
+	status = "okay";
 };
 
 &usb3_1 {

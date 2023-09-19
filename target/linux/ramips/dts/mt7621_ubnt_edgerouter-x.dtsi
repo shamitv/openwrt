@@ -19,12 +19,8 @@
 	};
 };
 
-&ethernet {
-	pinctrl-0 = <&mdio_pins>, <&rgmii1_pins>;
-};
-
 &gmac0 {
-	nvmem-cells = <&macaddr_factory_22>;
+	nvmem-cells = <&macaddr_factory_22 0>;
 	nvmem-cell-names = "mac-address";
 	label = "dsa";
 };
@@ -39,33 +35,29 @@
 		port@1 {
 			status = "okay";
 			label = "eth1";
-			nvmem-cells = <&macaddr_factory_22>;
+			nvmem-cells = <&macaddr_factory_22 1>;
 			nvmem-cell-names = "mac-address";
-			mac-address-increment = <1>;
 		};
 
 		port@2 {
 			status = "okay";
 			label = "eth2";
-			nvmem-cells = <&macaddr_factory_22>;
+			nvmem-cells = <&macaddr_factory_22 2>;
 			nvmem-cell-names = "mac-address";
-			mac-address-increment = <2>;
 		};
 
 		port@3 {
 			status = "okay";
 			label = "eth3";
-			nvmem-cells = <&macaddr_factory_22>;
+			nvmem-cells = <&macaddr_factory_22 3>;
 			nvmem-cell-names = "mac-address";
-			mac-address-increment = <3>;
 		};
 
 		port@4 {
 			status = "okay";
 			label = "eth4";
-			nvmem-cells = <&macaddr_factory_22>;
+			nvmem-cells = <&macaddr_factory_22 4>;
 			nvmem-cell-names = "mac-address";
-			mac-address-increment = <4>;
 		};
 	};
 };
@@ -91,8 +83,21 @@
 		};
 
 		factory: partition@e0000 {
+			compatible = "nvmem-cells";
 			label = "factory";
 			reg = <0xe0000 0x60000>;
+
+			nvmem-layout {
+				compatible = "fixed-layout";
+				#address-cells = <1>;
+				#size-cells = <1>;
+
+				macaddr_factory_22: macaddr@22 {
+					compatible = "mac-base";
+					reg = <0x22 0x6>;
+					#nvmem-cell-cells = <1>;
+				};
+			};
 		};
 
 		partition@140000 {
@@ -114,7 +119,7 @@
 
 &state_default {
 	gpio {
-		groups = "uart2", "uart3", "pcie", "rgmii2", "jtag";
+		groups = "uart2", "uart3", "pcie", "jtag";
 		function = "gpio";
 	};
 };
@@ -149,14 +154,4 @@
 
 &xhci {
 	status = "disabled";
-};
-
-&factory {
-	compatible = "nvmem-cells";
-	#address-cells = <1>;
-	#size-cells = <1>;
-
-	macaddr_factory_22: macaddr@22 {
-		reg = <0x22 0x6>;
-	};
 };

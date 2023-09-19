@@ -34,7 +34,23 @@
 	};
 };
 
+&hs_phy_0 {
+	status = "okay";
+};
+
+&ss_phy_0 {
+	status = "okay";
+};
+
 &usb3_0 {
+	status = "okay";
+};
+
+&hs_phy_1 {
+	status = "okay";
+};
+
+&ss_phy_1 {
 	status = "okay";
 };
 
@@ -51,11 +67,8 @@
 	max-link-speed = <1>;
 };
 
-&nand_controller {
+&nand {
 	status = "okay";
-
-	pinctrl-0 = <&nand_pins>;
-	pinctrl-names = "default";
 
 	nand@0 {
 		reg = <0>;

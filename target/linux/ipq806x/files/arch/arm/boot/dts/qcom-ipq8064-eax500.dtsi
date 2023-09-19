@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later OR MIT
 
-#include "qcom-ipq8064-v2.0.dtsi"
+#include "qcom-ipq8064-v2.0-smb208.dtsi"
 
 #include <dt-bindings/input/input.h>
 
@@ -12,7 +12,35 @@
 	};
 };
 
+&qcom_pinmux {
+	/* eax500 routers reuse the pcie2 reset pin for switch reset pin */
+	switch_reset: switch_reset_pins {
+		mux {
+			pins = "gpio63";
+			function = "gpio";
+			drive-strength = <12>;
+			bias-pull-up;
+		};
+	};
+};
+
+&hs_phy_0 {
+	status = "okay";
+};
+
+&ss_phy_0 {
+	status = "okay";
+};
+
 &usb3_0 {
+	status = "okay";
+};
+
+&hs_phy_1 {
+	status = "okay";
+};
+
+&ss_phy_1 {
 	status = "okay";
 };
 
@@ -30,15 +58,8 @@
 	status = "okay";
 };
 
-&pcie2 {
+&nand {
 	status = "okay";
-};
-
-&nand_controller {
-	status = "okay";
-
-	pinctrl-0 = <&nand_pins>;
-	pinctrl-names = "default";
 
 	nand@0 {
 		reg = <0>;
@@ -49,7 +70,7 @@
 		nand-ecc-step-size = <512>;
 
 		nand-is-boot-medium;
-		qcom,boot_pages_size = <0x0c80000>;
+		qcom,boot-partitions = <0x0 0x0c80000>;
 
 		partitions: partitions {
 			compatible = "fixed-partitions";
@@ -159,6 +180,10 @@
 
 	pinctrl-0 = <&mdio0_pins>;
 	pinctrl-names = "default";
+
+	/* Switch from documentation require at least 10ms for reset */
+	reset-gpios = <&qcom_pinmux 63 GPIO_ACTIVE_HIGH>;
+	reset-post-delay-us = <12000>;
 
 	phy0: ethernet-phy@0 {
 		reg = <0>;

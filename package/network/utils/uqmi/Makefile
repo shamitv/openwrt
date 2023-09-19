@@ -1,19 +1,20 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=uqmi
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_RELEASE:=5
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL=$(PROJECT_GIT)/project/uqmi.git
-PKG_SOURCE_DATE:=2022-02-02
-PKG_SOURCE_VERSION:=f254fc59c710d781eca3ec36e0bff2d8970370fa
-PKG_MIRROR_HASH:=350fd627150dde0601a96ff313a76f7a827b0199e7ee9ab86e4f2f96280edad5
+PKG_SOURCE_DATE:=2022-05-04
+PKG_SOURCE_VERSION:=56cb2d4056fef132ccf78dfb6f3074ae5d109992
+PKG_MIRROR_HASH:=cc832b5318805df8c8387a3650f250dee72d5f1dbda4e4866b5503e186b2210c
 PKG_MAINTAINER:=Matti Laakso <malaakso@elisanet.fi>
 
 PKG_LICENSE:=GPL-2.0
 PKG_LICENSE_FILES:=
 
 PKG_FLAGS:=nonshared
+PKG_BUILD_FLAGS:=gc-sections
 
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/cmake.mk
@@ -32,9 +33,9 @@ define Package/uqmi/description
 endef
 
 TARGET_CFLAGS += \
-	-I$(STAGING_DIR)/usr/include -ffunction-sections -fdata-sections
-
-TARGET_LDFLAGS += -Wl,--gc-sections
+	-I$(STAGING_DIR)/usr/include \
+	-Wno-error=dangling-pointer \
+	-Wno-error=maybe-uninitialized
 
 CMAKE_OPTIONS += \
 	-DDEBUG=1

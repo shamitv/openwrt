@@ -100,6 +100,23 @@
 	nvmem-cell-names = "mac-address";
 };
 
+&gmac1 {
+	status = "okay";
+	label = "wan2";
+	phy-mode = "rgmii-rxid";
+	phy-handle = <&ethphy5>;
+
+	nvmem-cells = <&macaddr_factory_e000>;
+	nvmem-cell-names = "mac-address";
+	mac-address-increment = <1>;
+};
+
+&mdio {
+	ethphy5: ethernet-phy@5 {
+		reg = <5>;
+	};
+};
+
 &switch0 {
 	ports {
 		port@0 {
@@ -124,7 +141,8 @@
 
 		port@4 {
 			status = "okay";
-			label = "wan";
+			label = "wan1";
+
 			nvmem-cells = <&macaddr_factory_e000>;
 			nvmem-cell-names = "mac-address";
 			mac-address-increment = <1>;

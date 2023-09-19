@@ -147,13 +147,27 @@
 	};
 };
 
+&hs_phy_0 {
+	status = "okay";
+};
+
+&ss_phy_0 {
+	status = "okay";
+};
+
 &usb3_0 {
-	clocks = <&gcc USB30_1_MASTER_CLK>;
+	status = "okay";
+};
+
+&hs_phy_1 {
+	status = "okay";
+};
+
+&ss_phy_1 {
 	status = "okay";
 };
 
 &usb3_1 {
-	clocks = <&gcc USB30_0_MASTER_CLK>;
 	status = "okay";
 };
 
@@ -166,11 +180,8 @@
 	max-link-speed = <1>;
 };
 
-&nand_controller {
+&nand {
 	status = "okay";
-
-	pinctrl-0 = <&nand_pins>;
-	pinctrl-names = "default";
 
 	nand@0 {
 		reg = <0>;
@@ -181,7 +192,7 @@
 		nand-ecc-step-size = <512>;
 
 		nand-is-boot-medium;
-		qcom,boot_pages_size = <0x1180000>;
+		qcom,boot-partitions = <0x0 0x1180000>;
 
 		partitions {
 			compatible = "fixed-partitions";

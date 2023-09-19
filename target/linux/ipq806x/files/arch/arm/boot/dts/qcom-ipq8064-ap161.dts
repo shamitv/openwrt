@@ -25,7 +25,7 @@
 };
 
 &qcom_pinmux {
-	rgmii2_pins: rgmii2_pins {
+	rgmii2_pins: rgmii2-pins {
 		mux {
 			pins = "gpio27", "gpio28", "gpio29",
 			       "gpio30", "gpio31", "gpio32",
@@ -42,7 +42,23 @@
 	};
 };
 
+&hs_phy_0 {
+	status = "okay";
+};
+
+&ss_phy_0 {
+	status = "okay";
+};
+
 &usb3_0 {
+	status = "okay";
+};
+
+&hs_phy_1 {
+	status = "okay";
+};
+
+&ss_phy_1 {
 	status = "okay";
 };
 
@@ -63,11 +79,8 @@
 	status = "okay";
 };
 
-&nand_controller {
+&nand {
 	status = "okay";
-
-	pinctrl-0 = <&nand_pins>;
-	pinctrl-names = "default";
 
 	nand@0 {
 		reg = <0>;

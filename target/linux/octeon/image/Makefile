@@ -48,6 +48,7 @@ define Device/ubnt_edgerouter
   DEVICE_MODEL := EdgeRouter
   BOARD_NAME := er
   CMDLINE := $(ER_CMDLINE)
+  SUPPORTED_DEVICES += er
 endef
 TARGET_DEVICES += ubnt_edgerouter
 
@@ -79,7 +80,36 @@ define Device/ubnt_edgerouter-lite
   DEVICE_MODEL := EdgeRouter Lite
   BOARD_NAME := erlite
   CMDLINE := $(ERLITE_CMDLINE)
+  SUPPORTED_DEVICES += erlite
 endef
 TARGET_DEVICES += ubnt_edgerouter-lite
+
+define Device/ubnt_unifi-usg
+  $(Device/ubnt_edgerouter-lite)
+  DEVICE_MODEL := UniFi Security Gateway
+  BOARD_NAME := ubnt,usg
+  DEVICE_PACKAGES += kmod-gpio-button-hotplug kmod-leds-gpio
+  DEVICE_DTS := cn5020_ubnt_usg
+  KERNEL += | append-dtb-to-elf
+endef
+TARGET_DEVICES += ubnt_unifi-usg
+
+define Device/cisco_vedge1000
+  DEVICE_VENDOR := Cisco Viptela
+  DEVICE_MODEL := vEdge 1000
+  BOARD_NAME := cisco,vedge1000
+  DEVICE_PACKAGES += \
+	kmod-hwmon-jc42 \
+	kmod-hwmon-max6697 \
+	kmod-of-mdio \
+	kmod-rtc-ds1307 \
+	kmod-usb-dwc3 \
+	kmod-usb-storage-uas \
+	kmod-usb3
+  KERNEL := kernel-bin | append-dtb-elf
+  KERNEL_DEPENDS := $$(wildcard $(DTS_DIR)/$(DEVICE_DTS).dts)
+  DEVICE_DTS := cn6130_cisco_vedge1000
+endef
+TARGET_DEVICES += cisco_vedge1000
 
 $(eval $(call BuildImage))

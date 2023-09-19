@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later OR MIT
-#include "qcom-ipq8064-v2.0.dtsi"
+#include "qcom-ipq8064-v2.0-smb208.dtsi"
 
 #include <dt-bindings/input/input.h>
 
@@ -156,11 +156,8 @@
 	};
 };
 
-&nand_controller {
+&nand {
 	status = "okay";
-
-	pinctrl-0 = <&nand_pins>;
-	pinctrl-names = "default";
 
 	cs@0 {
 		reg = <0>;
@@ -390,11 +387,27 @@
 	};
 };
 
+&hs_phy_0 {
+	status = "okay";
+};
+
+&ss_phy_0 {
+	status = "okay";
+};
+
 &usb3_0 {
 	status = "okay";
 
 	pinctrl-0 = <&usb_pwr_en_pins>;
 	pinctrl-names = "default";
+};
+
+&hs_phy_1 {
+	status = "okay";
+};
+
+&ss_phy_1 {
+	status = "okay";
 };
 
 &usb3_1 {

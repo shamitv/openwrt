@@ -1,4 +1,4 @@
-#include "qcom-ipq8064-v2.0.dtsi"
+#include "qcom-ipq8064-v2.0-smb208.dtsi"
 
 #include <dt-bindings/input/input.h>
 
@@ -257,7 +257,8 @@
 				partition@320000 {
 					label = "firmware";
 					reg = <0x320000 0xc60000>;
-					compatible = "denx,uimage";
+					compatible = "openwrt,uimage";
+					openwrt,offset = <512>; /* account for pad-extra 512 */
 				};
 
 				/* hole 0xf80000 - 0xfaf100 */
@@ -298,7 +299,23 @@
 	};
 };
 
+&hs_phy_0 {
+	status = "okay";
+};
+
+&ss_phy_0 {
+	status = "okay";
+};
+
 &usb3_0 {
+	status = "okay";
+};
+
+&hs_phy_1 {
+	status = "okay";
+};
+
+&ss_phy_1 {
 	status = "okay";
 };
 
