@@ -224,6 +224,22 @@ endef
 $(eval $(call KernelPackage,phylib-broadcom))
 
 
+define KernelPackage/phy-amd
+   SUBMENU:=$(NETWORK_DEVICES_MENU)
+   TITLE:=AMD PHY driver
+   KCONFIG:=CONFIG_AMD_PHY
+   DEPENDS:=+kmod-libphy
+   FILES:=$(LINUX_DIR)/drivers/net/phy/amd.ko
+   AUTOLOAD:=$(call AutoProbe,amd,1)
+endef
+
+define KernelPackage/phy-amd/description
+   Currently supports the AMD and Altima PHYs.
+endef
+
+$(eval $(call KernelPackage,phy-amd))
+
+
 define KernelPackage/phy-ax88796b
    SUBMENU:=$(NETWORK_DEVICES_MENU)
    TITLE:=Asix PHY driver
@@ -1344,7 +1360,8 @@ define KernelPackage/mlx5-core
 	CONFIG_MLX5_MPFS=y \
 	CONFIG_MLX5_SW_STEERING=n \
 	CONFIG_MLX5_TC_CT=n \
-	CONFIG_MLX5_TLS=n
+	CONFIG_MLX5_TLS=n \
+	CONFIG_MLX5_VFIO_PCI=n
   AUTOLOAD:=$(call AutoProbe,mlx5_core)
 endef
 
