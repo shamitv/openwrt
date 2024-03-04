@@ -12,21 +12,32 @@ PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL=https://github.com/jow-/ucode.git
-PKG_SOURCE_DATE:=2023-10-19
-PKG_SOURCE_VERSION:=07c03173d4e6a30953f92fa88ed29b0b956c9106
-PKG_MIRROR_HASH:=fd770335f442ebfc0f4e28d94bb60d886c43aa239ab88e965be7c490b3283a82
+PKG_SOURCE_DATE:=2024-02-21
+PKG_SOURCE_VERSION:=ba3855ae3775197f3594fc2615cac539075bd2fb
+PKG_MIRROR_HASH:=82b8a73417575b58a234586354eba4d0b10180a80b441cd87a9a554227304d34
 PKG_MAINTAINER:=Jo-Philipp Wich <jo@mein.io>
 PKG_LICENSE:=ISC
 
 PKG_ABI_VERSION:=20230711
+HOST_BUILD_DEPENDS:=libjson-c/host
 
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/host-build.mk
 include $(INCLUDE_DIR)/cmake.mk
 
 CMAKE_OPTIONS += -DSOVERSION=$(PKG_ABI_VERSION)
+
+ifeq ($(HOST_OS),Darwin)
+  CMAKE_HOST_OPTIONS += \
+	-DCMAKE_SKIP_RPATH=FALSE \
+	-DCMAKE_MACOSX_RPATH=1 \
+	-DCMAKE_INSTALL_RPATH="${STAGING_DIR_HOSTPKG}/lib"
+else
+  CMAKE_HOST_OPTIONS += \
+	-DSOVERSION=$(PKG_ABI_VERSION)
+endif
+
 CMAKE_HOST_OPTIONS += \
-	-DSOVERSION=$(PKG_ABI_VERSION) \
 	-DFS_SUPPORT=ON \
 	-DMATH_SUPPORT=ON \
 	-DNL80211_SUPPORT=OFF \
@@ -84,7 +95,7 @@ define UcodeModule
  define Package/ucode-mod-$(strip $(1))
   $(Package/ucode/default)
   TITLE+= ($(strip $(1)) module)
-  DEPENDS:=ucode $(3)
+  DEPENDS:=+ucode $(3)
  endef
 
  define Package/ucode-mod-$(strip $(1))/description

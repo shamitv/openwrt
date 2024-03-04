@@ -34,6 +34,7 @@ ath79_setup_interfaces()
 	devolo,dvl1750x|\
 	dlink,dap-1330-a1|\
 	dlink,dap-1365-a1|\
+	dlink,dap-1720-a1|\
 	dlink,dap-2230-a1|\
 	dlink,dap-2660-a1|\
 	dlink,dap-2680-a1|\
@@ -47,6 +48,7 @@ ath79_setup_interfaces()
 	engenius,ecb600|\
 	enterasys,ws-ap3705i|\
 	extreme-networks,ws-ap3805i|\
+	fortinet,fap-220-b|\
 	fortinet,fap-221-b|\
 	glinet,gl-ar300m-lite|\
 	glinet,gl-usb150|\
@@ -103,6 +105,7 @@ ath79_setup_interfaces()
 	ubnt,bullet-m-xw|\
 	ubnt,lap-120|\
 	ubnt,litebeam-ac-gen2|\
+	ubnt,litebeam-m5-xw|\
 	ubnt,nanobeam-ac|\
 	ubnt,nanobeam-ac-xc|\
 	ubnt,nanostation-ac-loco|\
@@ -114,6 +117,7 @@ ath79_setup_interfaces()
 	ubnt,powerbridge-m|\
 	ubnt,rocket-5ac-lite|\
 	ubnt,rocket-m|\
+	ubnt,uk-ultra|\
 	ubnt,unifiac-lite|\
 	ubnt,unifiac-lr|\
 	ubnt,unifiac-mesh|\
@@ -140,6 +144,9 @@ ath79_setup_interfaces()
 	alfa-network,n5q|\
 	devolo,dvl1200e|\
 	devolo,dvl1750e|\
+	elecom,wab-i1750-ps|\
+	elecom,wab-s1167-ps|\
+	elecom,wab-s600-ps|\
 	engenius,enstationac-v1|\
 	engenius,ews511ap|\
 	engenius,ews660ap|\
@@ -284,6 +291,10 @@ ath79_setup_interfaces()
 	devolo,magic-2-wifi)
 		ucidef_add_switch "switch0" \
 			"0@eth0" "2:wan" "3:lan" "4:lan"
+		;;
+	dlink,covr-p2500-a1)
+		ucidef_add_switch "switch0" \
+			"0@eth0" "1:lan" "2:lan" "3:wan" "4:plc"
 		;;
 	dlink,dap-2695-a1)
 		ucidef_add_switch "switch0" \
@@ -488,6 +499,11 @@ ath79_setup_interfaces()
 		ucidef_add_switch "switch0" \
 			"0@eth1" "3:lan:3" "4:lan:2" "5:lan:1" "6@eth0" "2:wan:4" "1:wan:5"
 		;;
+	tplink,deco-m4r-v1|\
+	tplink,deco-s4-v2)
+		ucidef_add_switch "switch0" \
+			"0@eth0" "3:lan:1" "5:lan:2"
+		;;
 	tplink,eap225-wall-v2)
 		ucidef_add_switch "switch0" \
 			"0@eth0" "1:lan" "2:lan" "3:lan" "4:lan"
@@ -564,11 +580,6 @@ ath79_setup_interfaces()
 		ucidef_add_switch "switch0" \
 			"0@eth0" "1:lan" "2:lan"
 		;;
-	tplink,deco-m4r-v1|\
-	tplink,deco-s4-v2)
-		ucidef_add_switch "switch0" \
-			"0@eth0" "3:lan:1" "5:lan:2"
-		;;
 	hiwifi,hc6361|\
 	xiaomi,mi-router-4q|\
 	zbtlink,zbt-wd323)
@@ -633,6 +644,13 @@ ath79_setup_macs()
 	devolo,magic-2-wifi)
 		label_mac=$(macaddr_add "$(mtd_get_mac_binary art 0x1002)" 3)
 		;;
+	dlink,covr-p2500-a1)
+		lan_mac=$(mtd_get_mac_ascii art "protest_lan_mac")
+		wan_mac=$(mtd_get_mac_ascii art "protest_lan_mac")
+		label_mac=$(mtd_get_mac_ascii art "protest_plc_mac")
+		plc_mac=$(mtd_get_mac_ascii art "protest_plc_mac")
+		[ -n "$plc_mac" ] && ucidef_set_interface_macaddr "plc" $plc_mac
+		;;
 	dlink,dap-1330-a1|\
 	dlink,dap-1365-a1|\
 	dlink,dch-g020-a1)
@@ -687,15 +705,18 @@ ath79_setup_macs()
 		lan_mac=$(mtd_get_mac_ascii devdata "lanmac")
 		wan_mac=$(mtd_get_mac_ascii devdata "wanmac")
 		;;
-	elecom,wrc-1750ghbk2-i|\
-	elecom,wrc-300ghbk2-i)
-		wan_mac=$(mtd_get_mac_ascii hwconfig "HW.WAN.MAC.Address")
-		label_mac=$wan_mac
-		;;
+	elecom,wab-i1750-ps|\
+	elecom,wab-s1167-ps|\
+	elecom,wab-s600-ps|\
 	engenius,ecb1200|\
 	engenius,ecb1750)
 		lan_mac=$(mtd_get_mac_ascii u-boot-env ethaddr)
 		label_mac=$lan_mac
+		;;
+	elecom,wrc-1750ghbk2-i|\
+	elecom,wrc-300ghbk2-i)
+		wan_mac=$(mtd_get_mac_ascii hwconfig "HW.WAN.MAC.Address")
+		label_mac=$wan_mac
 		;;
 	engenius,epg5000|\
 	engenius,esr1200|\
@@ -712,10 +733,6 @@ ath79_setup_macs()
 		;;
 	enterasys,ws-ap3705i)
 		label_mac=$(mtd_get_mac_ascii u-boot-env0 ethaddr)
-		;;
-	fortinet,fap-221-b)
-		lan_mac=$(mtd_get_mac_text u-boot 0x3ff80 12)
-		label_mac=$lan_mac
 		;;
 	hak5,lan-turtle|\
 	hak5,packet-squirrel)

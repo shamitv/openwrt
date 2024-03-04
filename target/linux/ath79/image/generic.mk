@@ -9,6 +9,7 @@ DEVICE_VARS += ADDPATTERN_ID ADDPATTERN_VERSION
 DEVICE_VARS += SEAMA_SIGNATURE SEAMA_MTDBLOCK
 DEVICE_VARS += KERNEL_INITRAMFS_PREFIX DAP_SIGNATURE
 DEVICE_VARS += EDIMAX_HEADER_MAGIC EDIMAX_HEADER_MODEL
+DEVICE_VARS += ELECOM_HWID
 DEVICE_VARS += MOXA_MAGIC MOXA_HWID
 DEVICE_VARS += OPENMESH_CE_TYPE ZYXEL_MODEL_STRING
 DEVICE_VARS += SUPPORTED_TELTONIKA_DEVICES
@@ -31,6 +32,17 @@ define Build/cybertan-trx
 		-x 32 -a 0x10000 -x -32 -f $@
 	-mv "$@.new" "$@"
 	-rm $@-empty.bin
+endef
+
+define Build/dlink-sge-signature
+	( \
+		crc=$$(gzip -c $@ | tail -c 8 | od -An -tx4 --endian little | cut -d " " -f2); \
+		cat $@; \
+		$(MKHASH) md5 $@ ; \
+		echo $(1); \
+		echo -n $$crc; \
+	) > $@.new
+	mv $@.new $@
 endef
 
 define Build/edimax-headers
@@ -74,7 +86,7 @@ define Build/mkmylofw_16m
 
 	let \
 		size="$$(stat -c%s $@)" \
-		pad="$(subst k,* 1024,$(BLOCKSIZE))" \
+		pad="$(call exp_units,$(BLOCKSIZE))" \
 		pad="(pad - (size % pad)) % pad" \
 		newsize='size + pad' ; \
 		[ $$newsize -lt $$((0x660000)) ] && newsize=0x660000 ; \
@@ -995,6 +1007,26 @@ define Device/devolo_magic-2-wifi
 endef
 TARGET_DEVICES += devolo_magic-2-wifi
 
+define Device/dlink_covr-p2500-a1
+  $(Device/loader-okli-uimage)
+  SOC := qca9563
+  DEVICE_VENDOR := D-Link
+  DEVICE_MODEL := COVR-P2500
+  DEVICE_VARIANT := A1
+  DEVICE_PACKAGES := kmod-ath10k-ct ath10k-firmware-qca9888-ct
+  LOADER_FLASH_OFFS := 0x050000
+  LOADER_KERNEL_MAGIC := 0x68737173
+  KERNEL := kernel-bin | append-dtb | lzma | uImage lzma -M 0x68737173
+  IMAGE_SIZE := 14528k
+  IMAGES += factory.bin recovery.bin
+  IMAGE/recovery.bin := append-kernel | pad-to $$$$(BLOCKSIZE) | \
+	append-rootfs | pad-rootfs | check-size | pad-to 14528k | \
+	append-loader-okli-uimage $(1) | pad-to 15616k
+  IMAGE/factory.bin := $$(IMAGE/recovery.bin) | \
+	dlink-sge-image COVR-P2500 | dlink-sge-signature COVR-P2500
+endef
+TARGET_DEVICES += dlink_covr-p2500-a1
+
 define Device/dlink_dap-13xx
   SOC := qca9533
   DEVICE_VENDOR := D-Link
@@ -1021,6 +1053,22 @@ define Device/dlink_dap-1365-a1
   DAP_SIGNATURE := HONEYBEE-FIRMWARE-DAP-1365
 endef
 TARGET_DEVICES += dlink_dap-1365-a1
+
+define Device/dlink_dap-1720-a1
+  $(Device/seama)
+  SOC := qca9563
+  DEVICE_VENDOR := D-Link
+  DEVICE_MODEL := DAP-1720
+  DEVICE_VARIANT := A1
+  DEVICE_PACKAGES := rssileds -swconfig \
+	kmod-ath10k-ct-smallbuffers ath10k-firmware-qca988x-ct
+  SEAMA_SIGNATURE := wapac28_dlink.2015_dap1720
+  IMAGE_SIZE := 15872k
+  IMAGES += recovery.bin
+  IMAGE/recovery.bin := $$(IMAGE/default) | pad-rootfs -x 64 | seama | \
+	seama-seal | check-size
+endef
+TARGET_DEVICES += dlink_dap-1720-a1
 
 define Device/dlink_dap-2xxx
   IMAGES += factory.img
@@ -1268,6 +1316,40 @@ define Device/dlink_dir-869-a1
   SUPPORTED_DEVICES += dir-869-a1
 endef
 TARGET_DEVICES += dlink_dir-869-a1
+
+define Device/elecom_wab
+  DEVICE_VENDOR := ELECOM
+  IMAGE_SIZE := 14336k
+  IMAGES += factory.bin
+  IMAGE/factory.bin := append-kernel | pad-to $$$$(BLOCKSIZE) | append-rootfs | \
+	pad-rootfs | check-size | elx-header $$$$(ELECOM_HWID) 8844A2D168B45A2D
+  DEVICE_PACKAGES := kmod-ath10k-ct ath10k-firmware-qca988x-ct kmod-gpio-beeper \
+	kmod-usb2 kmod-usb-ledtrig-usbport
+endef
+
+define Device/elecom_wab-i1750-ps
+  $(Device/elecom_wab)
+  SOC := qca9558
+  DEVICE_MODEL := WAB-I1750-PS
+  ELECOM_HWID := 0107000d
+endef
+TARGET_DEVICES += elecom_wab-i1750-ps
+
+define Device/elecom_wab-s1167-ps
+  $(Device/elecom_wab)
+  SOC := qca9557
+  DEVICE_MODEL := WAB-S1167-PS
+  ELECOM_HWID := 0107000c
+endef
+TARGET_DEVICES += elecom_wab-s1167-ps
+
+define Device/elecom_wab-s600-ps
+  $(Device/elecom_wab)
+  SOC := qca9557
+  DEVICE_MODEL := WAB-S600-PS
+  ELECOM_HWID := 01070028
+endef
+TARGET_DEVICES += elecom_wab-s600-ps
 
 define Device/elecom_wrc-1750ghbk2-i
   SOC := qca9563
@@ -1532,12 +1614,9 @@ define Device/extreme-networks_ws-ap3805i
 endef
 TARGET_DEVICES += extreme-networks_ws-ap3805i
 
-define Device/fortinet_fap-221-b
+define Device/fortinet_fap_common
   $(Device/senao_loader_okli)
-  SOC := ar9344
   DEVICE_VENDOR := Fortinet
-  DEVICE_MODEL := FAP-221-B
-  FACTORY_IMG_NAME := FP221B-9.99-AP-build999-999999-patch99
   IMAGE_SIZE := 9216k
   LOADER_FLASH_OFFS := 0x040000
   IMAGE/factory.bin := append-kernel | pad-to $$$$(BLOCKSIZE) | \
@@ -1545,6 +1624,23 @@ define Device/fortinet_fap-221-b
 	check-size | pad-to $$$$(IMAGE_SIZE) | \
 	append-loader-okli-uimage $(1) | pad-to 10944k | \
 	gzip-filename $$$$(FACTORY_IMG_NAME)
+endef
+
+define Device/fortinet_fap-220-b
+  $(Device/fortinet_fap_common)
+  SOC := ar7161
+  DEVICE_MODEL := FAP-220-B
+  FACTORY_IMG_NAME := FAP22B-9.99-AP-build999-999999-patch99
+  DEVICE_PACKAGES := -uboot-envtools kmod-usb-ohci kmod-usb2 \
+	kmod-owl-loader
+endef
+TARGET_DEVICES += fortinet_fap-220-b
+
+define Device/fortinet_fap-221-b
+  $(Device/fortinet_fap_common)
+  SOC := ar9344
+  DEVICE_MODEL := FAP-221-B
+  FACTORY_IMG_NAME := FP221B-9.99-AP-build999-999999-patch99
 endef
 TARGET_DEVICES += fortinet_fap-221-b
 

@@ -2,6 +2,7 @@
 
 /dts-v1/;
 #include <dt-bindings/input/input.h>
+#include <dt-bindings/leds/common.h>
 #include <dt-bindings/gpio/gpio.h>
 
 #include "mt7986a.dtsi"
@@ -88,25 +89,29 @@
 		};
 
 		white2 {
-			label = "white:status";
+			function = LED_FUNCTION_STATUS;
+			color = <LED_COLOR_ID_WHITE>;
 			gpios = <&pio 16 GPIO_ACTIVE_HIGH>;
 			default-state = "off";
 		};
 
 		red2 {
-			label = "red:status";
+			function = LED_FUNCTION_STATUS;
+			color = <LED_COLOR_ID_RED>;
 			gpios = <&pio 17 GPIO_ACTIVE_HIGH>;
 			default-state = "off";
 		};
 
 		led_status_green: green2 {
-			label = "green:status";
+			function = LED_FUNCTION_STATUS;
+			color = <LED_COLOR_ID_GREEN>;
 			gpios = <&pio 31 GPIO_ACTIVE_HIGH>;
 			default-state = "off";
 		};
 
 		led_status_amber: amber2 {
-			label = "amber:status";
+			function = LED_FUNCTION_STATUS;
+			color = <LED_COLOR_ID_AMBER>;
 			gpios = <&pio 18 GPIO_ACTIVE_HIGH>;
 			default-state = "off";
 		};
@@ -337,10 +342,6 @@
 				label = "Factory";
 				reg = <0x180000 0x200000>;
 				read-only;
-
-				compatible = "nvmem-cells";
-				#address-cells = <1>;
-				#size-cells = <1>;
 			};
 			partition@380000 {
 				label = "FIP";

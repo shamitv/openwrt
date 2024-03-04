@@ -750,8 +750,9 @@ $(eval $(call KernelPackage,usb-serial-mct))
 
 define KernelPackage/usb-serial-mos7720
   TITLE:=Support for Moschip MOS7720 devices
-  KCONFIG:=CONFIG_USB_SERIAL_MOS7720
+  KCONFIG:=CONFIG_USB_SERIAL_MOS7720 CONFIG_USB_SERIAL_MOS7715_PARPORT=y
   FILES:=$(LINUX_DIR)/drivers/usb/serial/mos7720.ko
+  DEPENDS:=+kmod-ppdev
   AUTOLOAD:=$(call AutoProbe,mos7720)
   $(call AddDepends/usb-serial)
 endef
@@ -1738,6 +1739,7 @@ define KernelPackage/usb3
 	+TARGET_ramips_mt7621:kmod-usb-xhci-mtk \
 	+TARGET_mediatek:kmod-usb-xhci-mtk \
 	+TARGET_apm821xx_nand:kmod-usb-xhci-pci-renesas \
+	+TARGET_lantiq_xrx200:kmod-usb-xhci-pci-renesas \
 	+TARGET_mvebu_cortexa9:kmod-usb-xhci-pci-renesas
   KCONFIG:= \
 	CONFIG_USB_PCI=y \

@@ -74,14 +74,12 @@
 		compatible = "gpio-leds";
 
 		led_sys: led-0 {
-			label = "blue:sys";
 			gpios = <&tlmm 39 GPIO_ACTIVE_HIGH>;
 			color = <LED_COLOR_ID_BLUE>;
 			function = LED_FUNCTION_POWER;
 		};
 
 		led-1 {
-			label = "blue:wlan2g";
 			gpios = <&tlmm 32 GPIO_ACTIVE_HIGH>;
 			linux,default-trigger = "phy0tpt";
 			color = <LED_COLOR_ID_BLUE>;
@@ -90,7 +88,6 @@
 		};
 
 		led-2 {
-			label = "blue:wlan5g";
 			gpios = <&tlmm 50 GPIO_ACTIVE_HIGH>;
 			linux,default-trigger = "phy1tpt";
 			color = <LED_COLOR_ID_BLUE>;
@@ -173,16 +170,19 @@
 				label = "ART";
 				reg = <0x170000 0x10000>;
 				read-only;
-				compatible = "nvmem-cells";
-				#address-cells = <1>;
-				#size-cells = <1>;
 
-				precal_art_1000: precal@1000 {
-					reg = <0x1000 0x2f20>;
-				};
+				nvmem-layout {
+					compatible = "fixed-layout";
+					#address-cells = <1>;
+					#size-cells = <1>;
 
-				precal_art_5000: precal@5000 {
-					reg = <0x5000 0x2f20>;
+					precal_art_1000: precal@1000 {
+						reg = <0x1000 0x2f20>;
+					};
+
+					precal_art_5000: precal@5000 {
+						reg = <0x5000 0x2f20>;
+					};
 				};
 			};
 		};
