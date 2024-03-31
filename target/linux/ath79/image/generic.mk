@@ -6,7 +6,6 @@ include ./common-yuncore.mk
 include ./common-ubnt.mk
 
 DEVICE_VARS += ADDPATTERN_ID ADDPATTERN_VERSION
-DEVICE_VARS += SEAMA_SIGNATURE SEAMA_MTDBLOCK
 DEVICE_VARS += KERNEL_INITRAMFS_PREFIX DAP_SIGNATURE
 DEVICE_VARS += EDIMAX_HEADER_MAGIC EDIMAX_HEADER_MODEL
 DEVICE_VARS += ELECOM_HWID
@@ -192,23 +191,6 @@ define Build/zyxel-tar-bz2
 	cp $(KDIR)/loader-$(DEVICE_NAME).uImage $@.tmp/$(word 1,$(1)).lzma.uImage
 	$(TAR) -cjf $@ -C $@.tmp .
 	rm -rf $@.tmp
-endef
-
-define Device/seama
-  KERNEL := kernel-bin | append-dtb | relocate-kernel | lzma
-  KERNEL_INITRAMFS := $$(KERNEL) | seama
-  IMAGES += factory.bin
-  SEAMA_MTDBLOCK := 1
-
-  # 64 bytes offset:
-  # - 28 bytes seama_header
-  # - 36 bytes of META data (4-bytes aligned)
-  IMAGE/default := append-kernel | pad-offset $$$$(BLOCKSIZE) 64 | append-rootfs
-  IMAGE/sysupgrade.bin := $$(IMAGE/default) | seama | pad-rootfs | \
-	check-size | append-metadata
-  IMAGE/factory.bin := $$(IMAGE/default) | pad-rootfs -x 64 | seama | \
-	seama-seal | check-size
-  SEAMA_SIGNATURE :=
 endef
 
 
@@ -1007,21 +989,35 @@ define Device/devolo_magic-2-wifi
 endef
 TARGET_DEVICES += devolo_magic-2-wifi
 
-define Device/dlink_covr-p2500-a1
+define Device/dlink_covr
   $(Device/loader-okli-uimage)
   SOC := qca9563
   DEVICE_VENDOR := D-Link
-  DEVICE_MODEL := COVR-P2500
-  DEVICE_VARIANT := A1
   DEVICE_PACKAGES := kmod-ath10k-ct ath10k-firmware-qca9888-ct
   LOADER_FLASH_OFFS := 0x050000
   LOADER_KERNEL_MAGIC := 0x68737173
   KERNEL := kernel-bin | append-dtb | lzma | uImage lzma -M 0x68737173
   IMAGE_SIZE := 14528k
-  IMAGES += factory.bin recovery.bin
   IMAGE/recovery.bin := append-kernel | pad-to $$$$(BLOCKSIZE) | \
 	append-rootfs | pad-rootfs | check-size | pad-to 14528k | \
 	append-loader-okli-uimage $(1) | pad-to 15616k
+endef
+
+define Device/dlink_covr-c1200-a1
+  $(Device/dlink_covr)
+  DEVICE_MODEL := COVR-C1200
+  DEVICE_VARIANT := A1
+  IMAGES += factory.bin
+  IMAGE/factory.bin := $$(IMAGE/recovery.bin) | \
+	dlink-sge-signature COVR-C1200 | dlink-sge-image COVR-C1200
+endef
+TARGET_DEVICES += dlink_covr-c1200-a1
+
+define Device/dlink_covr-p2500-a1
+  $(Device/dlink_covr)
+  DEVICE_MODEL := COVR-P2500
+  DEVICE_VARIANT := A1
+  IMAGES += factory.bin recovery.bin
   IMAGE/factory.bin := $$(IMAGE/recovery.bin) | \
 	dlink-sge-image COVR-P2500 | dlink-sge-signature COVR-P2500
 endef
@@ -1053,22 +1049,6 @@ define Device/dlink_dap-1365-a1
   DAP_SIGNATURE := HONEYBEE-FIRMWARE-DAP-1365
 endef
 TARGET_DEVICES += dlink_dap-1365-a1
-
-define Device/dlink_dap-1720-a1
-  $(Device/seama)
-  SOC := qca9563
-  DEVICE_VENDOR := D-Link
-  DEVICE_MODEL := DAP-1720
-  DEVICE_VARIANT := A1
-  DEVICE_PACKAGES := rssileds -swconfig \
-	kmod-ath10k-ct-smallbuffers ath10k-firmware-qca988x-ct
-  SEAMA_SIGNATURE := wapac28_dlink.2015_dap1720
-  IMAGE_SIZE := 15872k
-  IMAGES += recovery.bin
-  IMAGE/recovery.bin := $$(IMAGE/default) | pad-rootfs -x 64 | seama | \
-	seama-seal | check-size
-endef
-TARGET_DEVICES += dlink_dap-1720-a1
 
 define Device/dlink_dap-2xxx
   IMAGES += factory.img
@@ -1281,41 +1261,6 @@ define Device/dlink_dir-842-c3
   DEVICE_PACKAGES := kmod-ath10k-ct ath10k-firmware-qca9888-ct
 endef
 TARGET_DEVICES += dlink_dir-842-c3
-
-define Device/dlink_dir-859-ax
-  $(Device/seama)
-  SOC := qca9563
-  DEVICE_VENDOR := D-Link
-  DEVICE_MODEL := DIR-859
-  IMAGE_SIZE := 15872k
-  DEVICE_PACKAGES := kmod-usb2 kmod-ath10k-ct-smallbuffers ath10k-firmware-qca988x-ct
-  SEAMA_SIGNATURE := wrgac37_dlink.2013gui_dir859
-endef
-
-define Device/dlink_dir-859-a1
-  $(Device/dlink_dir-859-ax)
-  DEVICE_VARIANT := A1
-endef
-TARGET_DEVICES += dlink_dir-859-a1
-
-define Device/dlink_dir-859-a3
-  $(Device/dlink_dir-859-ax)
-  DEVICE_VARIANT := A3
-endef
-TARGET_DEVICES += dlink_dir-859-a3
-
-define Device/dlink_dir-869-a1
-  $(Device/seama)
-  SOC := qca9563
-  DEVICE_VENDOR := D-Link
-  DEVICE_MODEL := DIR-869
-  DEVICE_VARIANT := A1
-  IMAGE_SIZE := 15872k
-  DEVICE_PACKAGES := kmod-usb2 kmod-ath10k-ct-smallbuffers ath10k-firmware-qca988x-ct
-  SEAMA_SIGNATURE := wrgac54_dlink.2015_dir869
-  SUPPORTED_DEVICES += dir-869-a1
-endef
-TARGET_DEVICES += dlink_dir-869-a1
 
 define Device/elecom_wab
   DEVICE_VENDOR := ELECOM
