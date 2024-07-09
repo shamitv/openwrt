@@ -2,7 +2,7 @@
 
 #include <dt-bindings/leds/common.h>
 
-#include "mt7620a_tplink_archer.dtsi"
+#include "mt7620a_tplink_8m.dtsi"
 
 / {
 	compatible = "tplink,archer-c5-v4", "ralink,mt7620a-soc";
@@ -74,7 +74,6 @@
 
 	rtl8367s {
 		compatible = "realtek,rtl8367b";
-		cpu_port = <7>;
 		realtek,extif2 = <1 0 1 1 1 1 1 1 2>;
 		mii-bus = <&mdio0>;
 		phy-id = <29>;
