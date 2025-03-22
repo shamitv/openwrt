@@ -9,10 +9,10 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=e2fsprogs
 PKG_CPE_ID:=cpe:/a:e2fsprogs_project:e2fsprogs
-PKG_VERSION:=1.47.0
-PKG_HASH:=0b4fe723d779b0927fb83c9ae709bc7b40f66d7df36433bef143e41c54257084
+PKG_VERSION:=1.47.2
+PKG_HASH:=08242e64ca0e8194d9c1caad49762b19209a06318199b63ce74ae4ef2d74e63c
 
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
 PKG_SOURCE_URL:=@KERNEL/linux/kernel/people/tytso/e2fsprogs/v$(PKG_VERSION)/
 
 HOST_BUILD_PARALLEL:=1
@@ -30,7 +30,12 @@ HOST_CONFIGURE_ARGS += \
 	--disable-tls \
 	--disable-nls \
 	--enable-threads=pth \
-	--disable-fuse2fs
+	--disable-fuse2fs \
+	--with-crond-dir=no
+
+# The following uses pkg-config the wrong way around. Just override it.
+HOST_CONFIGURE_VARS += \
+	ac_cv_lib_uuid_uuid_generate=yes
 
 define Host/Prepare
 	$(call Host/Prepare/Default)

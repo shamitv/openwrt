@@ -604,6 +604,18 @@ define Device/hnet_c108
 endef
 TARGET_DEVICES += hnet_c108
 
+define Device/hongdian_h8922-v30
+  SOC := mt7620a
+  IMAGE_SIZE := 15808k
+  DEVICE_VENDOR := Hongdian
+  DEVICE_MODEL := H8922
+  DEVICE_VARIANT := v30
+  DEVICE_PACKAGES := kmod-usb2 kmod-usb-ohci kmod-usb-net-qmi-wwan kmod-usb-serial-option uqmi uboot-envtools
+  IMAGES += rootfs.bin
+  IMAGE/rootfs.bin := append-rootfs | check-size 10560k
+endef
+TARGET_DEVICES += hongdian_h8922-v30
+
 define Device/humax_e2
   SOC := mt7620a
   IMAGE_SIZE := 7744k
@@ -1290,7 +1302,7 @@ endef
 TARGET_DEVICES += tplink_ec220-g5-v2
 
 define Device/tplink_re200-v1
-  $(Device/tplink-v1)
+  $(Device/tplink-v1-okli)
   SOC := mt7620a
   DEVICE_MODEL := RE200
   DEVICE_VARIANT := v1
@@ -1302,7 +1314,7 @@ endef
 TARGET_DEVICES += tplink_re200-v1
 
 define Device/tplink_re210-v1
-  $(Device/tplink-v1)
+  $(Device/tplink-v1-okli)
   SOC := mt7620a
   DEVICE_MODEL := RE210
   DEVICE_VARIANT := v1
@@ -1321,6 +1333,16 @@ define Device/trendnet_tew-810dr
   IMAGE_SIZE := 6720k
 endef
 TARGET_DEVICES += trendnet_tew-810dr
+
+define Device/trendnet_tha103ac
+  SOC := mt7620a
+  DEVICE_PACKAGES := kmod-mt76x0e rssileds
+  DEVICE_VENDOR := TRENDnet
+  DEVICE_MODEL := THA-103AC
+  IMAGE_SIZE := 7872k
+  SUPPORTED_DEVICES += mt7620a_mt7610e
+endef
+TARGET_DEVICES += trendnet_tha103ac
 
 define Device/vonets_var11n-300
   SOC := mt7620n
@@ -1574,7 +1596,7 @@ TARGET_DEVICES += zte_q7
 define Device/zyxel_keenetic-lite-iii-a
   SOC := mt7620n
   IMAGE_SIZE := 7872k
-  DEVICE_VENDOR := ZyXEL
+  DEVICE_VENDOR := Zyxel
   DEVICE_MODEL := Keenetic Lite III
   DEVICE_VARIANT := A
   IMAGES += factory.bin
@@ -1586,7 +1608,7 @@ TARGET_DEVICES += zyxel_keenetic-lite-iii-a
 define Device/zyxel_keenetic-omni
   SOC := mt7620n
   IMAGE_SIZE := 7872k
-  DEVICE_VENDOR := ZyXEL
+  DEVICE_VENDOR := Zyxel
   DEVICE_MODEL := Keenetic Omni
   DEVICE_PACKAGES := kmod-usb2 kmod-usb-ohci kmod-usb-ledtrig-usbport
   IMAGES += factory.bin
@@ -1599,7 +1621,7 @@ TARGET_DEVICES += zyxel_keenetic-omni
 define Device/zyxel_keenetic-omni-ii
   SOC := mt7620n
   IMAGE_SIZE := 7872k
-  DEVICE_VENDOR := ZyXEL
+  DEVICE_VENDOR := Zyxel
   DEVICE_MODEL := Keenetic Omni II
   DEVICE_PACKAGES := kmod-usb2 kmod-usb-ohci kmod-usb-ledtrig-usbport
   IMAGES += factory.bin
@@ -1612,7 +1634,7 @@ TARGET_DEVICES += zyxel_keenetic-omni-ii
 define Device/zyxel_keenetic-viva
   SOC := mt7620a
   IMAGE_SIZE := 16064k
-  DEVICE_VENDOR := ZyXEL
+  DEVICE_VENDOR := Zyxel
   DEVICE_MODEL := Keenetic Viva
   DEVICE_PACKAGES := kmod-usb2 kmod-usb-ohci kmod-usb-ledtrig-usbport \
 	kmod-switch-rtl8367b

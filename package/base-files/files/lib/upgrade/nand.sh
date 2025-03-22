@@ -217,6 +217,16 @@ nand_upgrade_prepare_ubi() {
 	[ "$root_ubivol" ] && ubirmvol /dev/$root_ubidev -N "$CI_ROOTPART" || :
 	[ "$data_ubivol" ] && ubirmvol /dev/$root_ubidev -N rootfs_data || :
 
+	# create provisioning vol
+	if [ "${UPGRADE_OPT_ADD_PROVISIONING:-0}" -gt 0 ]; then
+		[ -n "$(nand_find_volume $root_ubidev provisioning)" ] || {
+			if ! ubimkvol /dev/$root_ubidev -N provisioning -s 131072; then
+				echo "cannot create provisioning volume"
+				return 1
+			fi
+		}
+	fi
+
 	# create kernel vol
 	if [ -n "$kernel_length" ]; then
 		if ! ubimkvol /dev/$kern_ubidev -N "$CI_KERNPART" -s $kernel_length; then
@@ -300,7 +310,7 @@ nand_upgrade_fit() {
 # Write images in the TAR file to MTD partitions and/or UBI volumes as required
 nand_upgrade_tar() {
 	local tar_file="$1"
-	local cmd="$2"
+	local cmd="${2:-cat}"
 	local jffs2_markers="${CI_JFFS2_CLEAN_MARKERS:-0}"
 
 	# WARNING: This fails if tar contains more than one 'sysupgrade-*' directory.
